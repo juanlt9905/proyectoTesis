@@ -110,3 +110,44 @@ def tasa_inconsistencia(df, subconjunto_caracteristicas, clase):
             total_inconsistencias+= inconsistencias_grupo
 
     return total_inconsistencias/m
+
+
+# FUNCION FITNESS BIOBJETIVO
+
+def fitness_mod_nsga2(solution, dataframe, feature_names, target):
+    """
+        Toma como argumento una solucion codificada en binario, un dataframe con 
+        los atributos a calcular la TI, el nombre de las caracteristicas y la clase (tarjet)
+        
+
+    """
+
+    # decodificar solucion 
+    selected_features = []
+
+    for i in range(len(solution)):
+        if solution[i]==1:
+            selected_features.append(feature_names[i])
+    
+    num_total_features = len(feature_names)
+    num_selected_features = len(selected_features)
+
+    #print(f"DEBUG: Seleccionadas: {len(selected_features)} de {len(feature_names)}")
+
+    if not selected_features:
+        #print("DEBUG: ¡Lista vacía! Retornando penalización.")
+        return [0,0]
+        
+    # Llamar a tasa_inconsistencia
+    inconsistency_rate = tasa_inconsistencia(
+        df=dataframe, 
+        subconjunto_caracteristicas=selected_features, 
+        clase=target
+    )
+    
+    # Si inconsistency_rate es 0 (perfecto), el fitness sera maximo.
+    fitness1 = 1.0 - inconsistency_rate
+
+    fitness2=num_total_features - num_selected_features
+    
+    return [fitness1, fitness2]
